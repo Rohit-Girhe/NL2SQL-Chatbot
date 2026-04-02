@@ -1,6 +1,10 @@
 from vanna_setup import get_agent
+import asyncio
+from vanna.core.tool import ToolContext
+from vanna.core.user import User
+from vanna_setup import get_agent
 
-def seed_agent_memory():
+async def seed_agent_memory():
     """
     Seeds the Vanna Agent's memory with validated Question-to-SQL pairs.
     This provides the LLM with a 'few-shot learning' baseline, improving its 
@@ -106,15 +110,28 @@ def seed_agent_memory():
 
     print(f"Injecting {len(qa_pairs)} training pairs into Agent Memory...")
     
+    # 1. Create a mock execution context for our default user
+    system_user = User(id="default_system_user")
+    context = ToolContext(
+        user=system_user,
+        conversation_id="initial_seeding_session",
+        request_id="seeding_script_run",
+        agent_memory=agent.agent_memory
+    )
+    
     for question, sql in qa_pairs:
-        # Utilize the agent's tool registry to safely write to local memory
-        agent.tool_registry.execute_tool(
-            tool_name="save_question_tool_args", 
-            question=question, 
-            sql=sql
+        # 2. Directly write to the Agent's memory asynchronously
+        # We explicitly tell it that the "run_sql" tool was successfully used
+        await agent.agent_memory.save_tool_usage(
+            question=question,
+            tool_name="run_sql", 
+            args={"sql": sql},
+            context=context,
+            success=True
         )
         
     print("Memory seeding successfully completed.")
 
 if __name__ == "__main__":
-    seed_agent_memory()
+    # 3. Use asyncio to run our async seeding script in a standard terminal
+    asyncio.run(seed_agent_memory())
