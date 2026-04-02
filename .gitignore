@@ -1,5 +1,6 @@
 # Environment Variables
 .env
+.venv/
 
 # Project specific
 clinic.db
