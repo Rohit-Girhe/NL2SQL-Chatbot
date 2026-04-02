@@ -21,7 +21,7 @@ class DefaultUserResolver(UserResolver):
     Currently defaults to a single-tenant configuration.
     """
     def resolve_user(self, request_context: RequestContext) -> User:
-        return User(user_id="default_system_user")
+        return User(id="default_system_user")
 
 def get_agent() -> Agent:
     """
@@ -41,17 +41,21 @@ def get_agent() -> Agent:
     llm_service = GeminiLlmService(api_key=api_key, model="gemini-2.5-flash")
     
     # 2. Configure Database Execution Engine
-    db_runner = SqliteRunner(db_file="clinic.db")
+    db_runner = SqliteRunner(database_path="clinic.db")
     
     # 3. Initialize Agent Memory Engine
     memory = DemoAgentMemory()
     
     # 4. Register core execution and memory retrieval tools
+    # Vanna 2.0 uses Contextual Dependency Injection. Tools are initialized empty 
+    # and inherit the memory/db context from the Agent at runtime.
     registry = ToolRegistry()
-    registry.register_tool(RunSqlTool(db_runner=db_runner))
-    registry.register_tool(VisualizeDataTool())
-    registry.register_tool(SaveQuestionToolArgsTool(agent_memory=memory))
-    registry.register_tool(SearchSavedCorrectToolUsesTool(agent_memory=memory))
+    registry.register_local_tool(RunSqlTool(sql_runner=db_runner), access_groups=[])
+    registry.register_local_tool(VisualizeDataTool(), access_groups=[])
+    
+    # Remove the constructor arguments here:
+    registry.register_local_tool(SaveQuestionToolArgsTool(), access_groups=[])
+    registry.register_local_tool(SearchSavedCorrectToolUsesTool(), access_groups=[])
     
     # 5. Assemble and return the Agent
     agent = Agent(
