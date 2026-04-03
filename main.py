@@ -4,6 +4,8 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from vanna.core.user import RequestContext, User
 from vanna_setup import get_agent
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Initialize the Vanna Agent
 agent = get_agent()
@@ -60,6 +62,11 @@ async def chat_with_agent(request: ChatRequest):
         # Listen to the Agent's autonomous thought process
         async for component in agent.send_message(request_context=request_context, message=request.question):
             
+            # --- OUR DEBUG HOOK ---
+            print(f"\n--- COMPONENT DEBUG ---")
+            print(component)
+            # ----------------------
+
             # Safely parse the complex Vanna 2.0 UiComponent objects
             comp_dict = component.__dict__ if hasattr(component, "__dict__") else {}
             
