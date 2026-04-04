@@ -8,3 +8,7 @@ clinic.db
 # Python caching
 __pycache__/
 *.pyc
+
+# Vanna Local Memory
+adf7a146ba7eec9f/
+*.chroma/
