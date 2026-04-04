@@ -114,3 +114,12 @@ NL2SQL-CHATBOT/
 ├── requirements.txt       # Core project dependencies
 ├── README.md              # Project documentation
 └── RESULTS.md             # Test validation log for 20 benchmark queries
+
+## ⚠️ Troubleshooting & Known Limitations
+
+**Google Gemini API Rate Limits (429 Error)**
+This project utilizes the free tier of the Google Gemini API (`gemini-2.5-flash`), which is strictly limited to **20 requests per day**. 
+
+Because the Vanna 2.0 Autonomous Agent makes multiple LLM calls per user question (for schema lookup, SQL generation, and validation), you may exhaust the daily quota after 5 or 6 complex questions. 
+
+If you receive a `429 RESOURCE_EXHAUSTED` error in the terminal, the API key has hit its limit. Please wait for the daily quota reset or provide a fresh API key in the `.env` file to resume testing.
