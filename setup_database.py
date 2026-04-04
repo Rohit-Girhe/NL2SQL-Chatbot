@@ -161,16 +161,11 @@ def insert_dummy_data():
         
         cursor.execute('INSERT INTO invoices (patient_id, invoice_date, total_amount, paid_amount, status) VALUES (?, ?, ?, ?, ?)', (p_id, inv_date, total, paid, status))
 
+    # ONLY ONE COMMIT AND CLOSE
     conn.commit()
     conn.close()
     print(f"Database seeded successfully with {len(patient_ids)} patients and {len(doctor_ids)} doctors!")
 
-
-
-    conn.commit()
-    conn.close()
-    print("Database seeded successfully!")
-
 if __name__ == "__main__":
     create_tables()
-    # We will add the data generation function here next!
+    insert_dummy_data()
