@@ -13,11 +13,12 @@ from vanna.integrations.google import GeminiLlmService
 
 load_dotenv()
 
+# --- Identifies the user making requests ---
 class DefaultUserResolver(UserResolver):
     async def resolve_user(self, request_context: RequestContext) -> User:
         return User(id="default_system_user")
 
-# --- OUR BULLETPROOF SECURITY MIDDLEWARE ---
+# --- Adds a security layer before executing any SQL query ---
 class SecureSqliteRunner(SqliteRunner):
     """
     A transparent security wrapper. It peeks at the arguments to validate the SQL,
