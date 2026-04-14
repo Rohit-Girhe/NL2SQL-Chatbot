@@ -17,10 +17,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# --- Ensure the reuqest body contains a question filed (string) ---
 class ChatRequest(BaseModel):
     question: str
 
-# --- MATCHING THE REFERENCE IMAGE EXACTLY ---
+# --- Defines the response structure returned to clients ---
 class ChatResponse(BaseModel):
     message: str | None = None
     sql_query: str | None = None
@@ -35,6 +36,7 @@ class ChatResponse(BaseModel):
 async def root():
     return RedirectResponse(url="/docs")
 
+# --- Creates a Vanna context for user identification ---
 @app.post("/chat", response_model=ChatResponse)
 async def chat_with_agent(request: ChatRequest):
     request_context = RequestContext(user=User(id="default_system_user"))
@@ -43,6 +45,7 @@ async def chat_with_agent(request: ChatRequest):
     generated_sql = None
     df_results = None
     
+# --- Iterates through streaming responses from the Vanna agent ---
     try:
         async for component_wrapper in agent.send_message(request_context=request_context, message=request.question):
             
@@ -81,7 +84,7 @@ async def chat_with_agent(request: ChatRequest):
                 final_text = re.sub(r"```sql.*?```", "", final_text, flags=re.IGNORECASE|re.DOTALL)
             final_text = final_text.strip()
             
-        # --- FORMAT TO MATCH REFERENCE IMAGE EXACTLY ---
+        # --- FORMAT THE RESULT ---
         columns = []
         rows = []
         row_count = 0
@@ -92,7 +95,7 @@ async def chat_with_agent(request: ChatRequest):
             rows = df_results.values.tolist()
             row_count = len(rows)
             
-        # Match the "Result: 200" message style from your image if the AI didn't summarize
+        # Match the "Result: 200" message 
         if not final_text and row_count > 0:
             final_text = f"Result: {rows[0][0]}"
 
